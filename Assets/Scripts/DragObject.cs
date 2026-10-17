@@ -19,7 +19,9 @@ public class DragObject : MonoBehaviour
 
     void OnMouseDown()
     {
+        // TODO force to spawn point world z 
         lockedWorldZ = gameObject.transform.position.z;
+        
         mZCoord = Camera.main.WorldToScreenPoint(gameObject.transform.position).z;
         mOffset = gameObject.transform.position - GetMouseWorldPos();
         candidateObject = gameObject; 
