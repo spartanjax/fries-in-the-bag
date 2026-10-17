@@ -15,9 +15,11 @@ public class DragObject : MonoBehaviour
     private bool isRotatingLeft = false; 
     private bool isRotatingRight = false; 
 
+    private float lockedWorldZ; 
 
     void OnMouseDown()
     {
+        lockedWorldZ = gameObject.transform.position.z;
         mZCoord = Camera.main.WorldToScreenPoint(gameObject.transform.position).z;
         mOffset = gameObject.transform.position - GetMouseWorldPos();
         candidateObject = gameObject; 
@@ -77,7 +79,11 @@ public class DragObject : MonoBehaviour
     void OnMouseDrag()
     {
         gameObject.GetComponent<Rigidbody>().useGravity = false;
-        transform.position = GetMouseWorldPos() + mOffset; 
+
+        Vector3 targetPosition  = GetMouseWorldPos() + mOffset; 
+        targetPosition.z = lockedWorldZ;
+
+        transform.position = targetPosition; 
         candidateObject = gameObject;
 
     }
