@@ -51,4 +51,10 @@ public class ReturnToHome : MonoBehaviour
         gameObject.GetComponent<Rigidbody>().useGravity = true;
 
     }
+
+    public void GoHomeRotation(GameObject gO)
+    {
+        Debug.Log("Going to source rotation... " + gO);
+        transform.rotation = origRotation; 
+    }
 }
