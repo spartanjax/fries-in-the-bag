@@ -18,7 +18,8 @@ public class DragObject : MonoBehaviour
     private Rigidbody rb;
     private bool isDragging = false;
     private Vector3 physicsTargetPosition;
-    private float rotationDirection = 0f;
+    private float rotationZDirection = 0f;
+    private float rotationXDirection = 0f;
 
     void Start()
     {
@@ -62,11 +63,14 @@ public class DragObject : MonoBehaviour
 
     void Update()
     {
-        rotationDirection = 0f; 
+        rotationZDirection = 0f; 
+        rotationXDirection = 0f; 
         if (Keyboard.current != null)
         {
-            if (Keyboard.current.qKey.isPressed) rotationDirection = -1f; 
-            if (Keyboard.current.eKey.isPressed) rotationDirection = 1f; 
+            if (Keyboard.current.qKey.isPressed) rotationZDirection = -1f; 
+            if (Keyboard.current.eKey.isPressed) rotationZDirection = 1f; 
+            if (Keyboard.current.sKey.isPressed) rotationXDirection = 1f;
+            if (Keyboard.current.wKey.isPressed) rotationXDirection = -1f;
         }
 
         if (Mouse.current.rightButton.wasPressedThisFrame && candidateObject != null)
@@ -92,10 +96,10 @@ public class DragObject : MonoBehaviour
             rb.MovePosition(rb.position + dragDirection);
         }
 
-         if (rotationDirection != 0f && candidateObject != null)
+         if ((rotationXDirection != 0f || rotationZDirection != 0f) && candidateObject != null)
         {
             // Calculate a clean physical rotation step
-            Quaternion deltaRotation = Quaternion.Euler(new Vector3(0, 0, rotationDirection * 2f)); // Adjusted speed factor
+            Quaternion deltaRotation = Quaternion.Euler(new Vector3(rotationXDirection * 2f, 0, rotationZDirection * 2f)); // Adjusted speed factor
             rb.MoveRotation(rb.rotation * deltaRotation);
         }
     }
