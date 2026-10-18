@@ -11,15 +11,20 @@ public class DragObject : MonoBehaviour
 
     private Quaternion startRotation;
 
-    private bool b_IsRotating = false; 
-    private bool isRotatingLeft = false; 
-    private bool isRotatingRight = false; 
-
     private float lockedWorldZ; 
 
     public ReturnToHome returnToHomeScript; 
 
+    private Rigidbody rb;
+    private bool isDragging = false;
+    private Vector3 physicsTargetPosition;
+    private float rotationZDirection = 0f;
+    private float rotationXDirection = 0f;
 
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
     void OnMouseDown()
     {
         // TODO force to spawn point world z 
@@ -32,51 +37,73 @@ public class DragObject : MonoBehaviour
 
     }
 
-    void Update()
+    void OnMouseDrag()
     {
-        b_IsRotating = false; 
-        isRotatingLeft = false;
-        isRotatingRight = false;
 
-        if (Keyboard.current != null && Keyboard.current.qKey.isPressed)
-        {
-            b_IsRotating = true;
-            isRotatingLeft = true;
-            isRotatingRight = false;
-            Debug.Log("Q pressed, candidate = " + candidateObject);
-        }
+        rb.useGravity = false; 
+        isDragging = true; 
 
-        if (Keyboard.current != null && Keyboard.current.eKey.isPressed)
-        {
-            b_IsRotating = true;
-            isRotatingRight = true;
-            isRotatingLeft = false;
-            Debug.Log("E pressed, candidate = " + candidateObject);
-        }
+        rb.angularVelocity = Vector3.zero; 
 
-        if (b_IsRotating && candidateObject != null)
-        {
-            if (isRotatingLeft) { candidateObject.transform.Rotate(0,0,-1f); }
-            if (isRotatingRight) { candidateObject.transform.Rotate(0,0,1f); }
-        }
+        Vector3 targetPosition  = GetMouseWorldPos() + mOffset; 
+        targetPosition.z = lockedWorldZ;
 
-        if (Mouse.current.rightButton.wasPressedThisFrame && candidateObject != null)
+        physicsTargetPosition = targetPosition; 
 
-            // TODO this will return the rotation correctly but it sucks. 
-            //returnToHomeScript = GetComponent<ReturnToHome>();
-            //returnToHomeScript.GoHomeRotation(candidateObject);
-            candidateObject.transform.rotation = startRotation;
-            b_IsRotating = false; 
-            isRotatingLeft = false;
-            isRotatingRight = false;
     }
 
+    
     void OnMouseUp()
     {
-        gameObject.GetComponent<Rigidbody>().useGravity = true;
+        rb.useGravity = true; 
+        isDragging = false; 
         candidateObject = null; 
 
     }
+
+    void Update()
+    {
+        rotationZDirection = 0f; 
+        rotationXDirection = 0f; 
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.qKey.isPressed) rotationZDirection = -1f; 
+            if (Keyboard.current.eKey.isPressed) rotationZDirection = 1f; 
+            if (Keyboard.current.sKey.isPressed) rotationXDirection = 1f;
+            if (Keyboard.current.wKey.isPressed) rotationXDirection = -1f;
+        }
+
+        if (Mouse.current.rightButton.wasPressedThisFrame && candidateObject != null)
+        {
+            rb.MoveRotation(startRotation);
+        }
+
+    }
+
+    void FixedUpdate()
+    {
+       if (isDragging)
+        {
+
+            Vector3 dragDirection = physicsTargetPosition - rb.position; 
+            float maxDistancePerFrame = 0.01f; 
+
+            if (dragDirection.magnitude > maxDistancePerFrame)
+            {
+                dragDirection = dragDirection.normalized * maxDistancePerFrame; 
+            }
+
+            rb.MovePosition(rb.position + dragDirection);
+        }
+
+         if ((rotationXDirection != 0f || rotationZDirection != 0f) && candidateObject != null)
+        {
+            // Calculate a clean physical rotation step
+            Quaternion deltaRotation = Quaternion.Euler(new Vector3(rotationXDirection * 2f, 0, rotationZDirection * 2f)); // Adjusted speed factor
+            rb.MoveRotation(rb.rotation * deltaRotation);
+        }
+    }
+
 
     private Vector3 GetMouseWorldPos()
     {
@@ -88,15 +115,5 @@ public class DragObject : MonoBehaviour
 
         return Camera.main.ScreenToWorldPoint(mousePoint);
     }
-    void OnMouseDrag()
-    {
-        gameObject.GetComponent<Rigidbody>().useGravity = false;
 
-        Vector3 targetPosition  = GetMouseWorldPos() + mOffset; 
-        targetPosition.z = lockedWorldZ;
-
-        transform.position = targetPosition; 
-        candidateObject = gameObject;
-
-    }
 }
