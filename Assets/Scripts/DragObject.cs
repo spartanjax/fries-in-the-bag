@@ -17,6 +17,9 @@ public class DragObject : MonoBehaviour
 
     private float lockedWorldZ; 
 
+    public ReturnToHome returnToHomeScript; 
+
+
     void OnMouseDown()
     {
         // TODO force to spawn point world z 
@@ -58,7 +61,14 @@ public class DragObject : MonoBehaviour
         }
 
         if (Mouse.current.rightButton.wasPressedThisFrame && candidateObject != null)
+
+            // TODO this will return the rotation correctly but it sucks. 
+            //returnToHomeScript = GetComponent<ReturnToHome>();
+            //returnToHomeScript.GoHomeRotation(candidateObject);
             candidateObject.transform.rotation = startRotation;
+            b_IsRotating = false; 
+            isRotatingLeft = false;
+            isRotatingRight = false;
     }
 
     void OnMouseUp()
